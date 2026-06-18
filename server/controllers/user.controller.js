@@ -128,11 +128,30 @@ class UserController {
 
     blockUsers = async (req, res) => {
         try {
-            const { ids, status } = req.body;
+            const { ids, status } = req.body;   // status will be "blocked" or "active"
             if (!ids || ids.length === 0) {
                 return res.status(400).json({ message: 'No users selected' });
             }
-            await db.query('UPDATE users SET status = $1 WHERE id = ANY($2)', [status, ids]);
+
+            if (status === 'blocked') {
+                // When blocking: save current status as previous_status
+                await db.query(`
+                    UPDATE users 
+                    SET status = $1, 
+                        previous_status = status 
+                    WHERE id = ANY($2) 
+                    AND status != 'blocked'
+                `, [status, ids]);
+            } else {
+                // When unblocking: restore from previous_status (fallback to 'active')
+                await db.query(`
+                    UPDATE users 
+                    SET status = COALESCE(previous_status, 'active'),
+                        previous_status = NULL 
+                    WHERE id = ANY($2)
+                `, [ids]);
+            }
+
             res.status(200).json({
                 message: `Status successfully updated to ${status}`
             });
@@ -170,7 +189,7 @@ class UserController {
     };
 
     // ========================================
-    // TEACHER'S SUGGESTION: Email verification emulation
+    // Email verification emulation
     // Route: /api/users/verify-email-emulation
     // Directly update user status from unverified to active
     // ========================================

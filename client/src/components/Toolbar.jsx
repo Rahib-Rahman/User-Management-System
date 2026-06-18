@@ -24,9 +24,9 @@ export default function Toolbar({ onAction, hasSelection, selectedUsers }) {
                 variant="outline-success"
                 disabled={!hasSelection}
                 onClick={() => onAction("unblock", "active")}
-                title="Unblock selected users"
+                title="Unblock selected users (restore previous status)"
             >
-                <LockOpen size={18} />
+                <LockOpen size={18} /> Unblock
             </Button>
 
             {/* DELETE button - icon style, enabled when users selected */}

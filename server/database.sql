@@ -7,3 +7,10 @@ CREATE TABLE users (
     registration_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
     status VARCHAR(20) DEFAULT 'unconfirmed' -- status: unconfirmed, active, blocked
 );
+
+-- Add this line after the status column
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS previous_status VARCHAR(20);
+
+-- Optional: Backfill existing users (set previous_status = status for current records)
+UPDATE users SET previous_status = status WHERE previous_status IS NULL;
