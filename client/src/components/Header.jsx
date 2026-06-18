@@ -16,7 +16,7 @@ export default function Header() {
       <Navbar bg="white" className="border-bottom shadow-sm sticky-top">
         <Container fluid>
           <Navbar.Brand className="fw-bold fs-5">
-            User Management System
+            Rahib User Management System
           </Navbar.Brand>
           <Navbar.Collapse className="justify-content-end">
             <Button
