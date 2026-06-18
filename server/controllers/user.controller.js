@@ -133,30 +133,37 @@ class UserController {
                 return res.status(400).json({ message: 'No users selected' });
             }
 
+            let queryText;
+            let params;
+
             if (status === 'blocked') {
-                // Blocking: Save current status to previous_status, then block
-                await db.query(`
+                // Blocking: Save current status first
+                queryText = `
                     UPDATE users 
                     SET status = $1, 
                         previous_status = status 
                     WHERE id = ANY($2) 
                     AND status != 'blocked'
-                `, [status, ids]);
+                `;
+                params = [status, ids];
             } else {
-                // Unblocking: Restore previous_status (fallback to 'active')
-                await db.query(`
+                // Unblocking: Restore previous status
+                queryText = `
                     UPDATE users 
                     SET status = COALESCE(previous_status, 'active'),
                         previous_status = NULL 
-                    WHERE id = ANY($2)
-                `, [ids]);
+                    WHERE id = ANY($1)
+                `;
+                params = [ids];
             }
+
+            await db.query(queryText, params);
 
             res.status(200).json({
                 message: `Users successfully ${status === 'blocked' ? 'blocked' : 'unblocked'}`
             });
         } catch (error) {
-            console.error('Block/Unblock Error:', error); // Add this for better debugging
+            console.error("Block/Unblock Error:", error); // ← Add this for debugging
             errorHandler(res, error);
         }
     };

@@ -1,5 +1,7 @@
--- Clean and final schema
-CREATE TABLE IF NOT EXISTS users (
+-- Clean and correct schema
+DROP TABLE IF EXISTS users CASCADE;
+
+CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -10,11 +12,12 @@ CREATE TABLE IF NOT EXISTS users (
     previous_status VARCHAR(20)
 );
 
--- Ensure previous_status column exists (safe to run multiple times)
-ALTER TABLE users
-ADD COLUMN IF NOT EXISTS previous_status VARCHAR(20);
-
--- Backfill existing users
+-- Backfill (safe to run)
 UPDATE users
 SET previous_status = status
 WHERE previous_status IS NULL;
+
+-- Verify columns
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'users';
