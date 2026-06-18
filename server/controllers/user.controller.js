@@ -118,7 +118,7 @@ class UserController {
     getUsers = async (req, res) => {
         try {
             const users = await db.query(
-                'SELECT id, name, email, last_login_at, registration_at, status FROM users ORDER BY last_login_at DESC'
+                'SELECT id, name, email, last_login_at, registration_at, status, previous_status FROM users ORDER BY last_login_at DESC'
             );
             res.status(200).json(users.rows);
         } catch (error) {
@@ -128,13 +128,13 @@ class UserController {
 
     blockUsers = async (req, res) => {
         try {
-            const { ids, status } = req.body;   // status will be "blocked" or "active"
+            const { ids, status } = req.body;
             if (!ids || ids.length === 0) {
                 return res.status(400).json({ message: 'No users selected' });
             }
 
             if (status === 'blocked') {
-                // When blocking: save current status as previous_status
+                // Blocking: Save current status → previous_status, then block
                 await db.query(`
                     UPDATE users 
                     SET status = $1, 
@@ -143,7 +143,7 @@ class UserController {
                     AND status != 'blocked'
                 `, [status, ids]);
             } else {
-                // When unblocking: restore from previous_status (fallback to 'active')
+                // Unblocking: Restore previous_status (fallback to 'active')
                 await db.query(`
                     UPDATE users 
                     SET status = COALESCE(previous_status, 'active'),
@@ -153,7 +153,7 @@ class UserController {
             }
 
             res.status(200).json({
-                message: `Status successfully updated to ${status}`
+                message: `Users successfully ${status === 'blocked' ? 'blocked' : 'unblocked'}`
             });
         } catch (error) {
             errorHandler(res, error);
