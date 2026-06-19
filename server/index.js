@@ -9,7 +9,9 @@ const PORT = process.env.PORT || 5000;
 const app = express();
 
 app.use(cors({
-    origin: ["rahib-user-management-system.netlify.app"],
+    origin: [process.env.CLIENT_URL,           // https://rahib-user-management-system.netlify.app
+        "http://localhost:5173",          // for local development
+        "http://localhost:3000"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]

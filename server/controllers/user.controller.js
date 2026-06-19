@@ -4,6 +4,7 @@ const transporter = require('../config/mailer');
 const db = require('../db');
 const errorHandler = require('../utils/errorHandler');
 
+
 class UserController {
     // ========================================
     // REGISTRATION - CRITICAL CHANGE
