@@ -8,7 +8,7 @@ const api = axios.create({
     },
 });
 
-// Request interceptor
+// Request interceptor - add token to headers
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -17,12 +17,20 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-// Response interceptor for blocked users
+// ========================================
+// AXIOS INTERCEPTOR: Global response handling
+// If 401 or 403: user is blocked/deleted/logout
+// Clear tokens and redirect to login immediately
+// ========================================
 api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401 || error.response?.status === 403) {
-            localStorage.clear();
+            // User is blocked or deleted - force logout
+            localStorage.removeItem('token');
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('rememberMe');
+            // Redirect to login immediately
             window.location.href = '/login';
         }
         return Promise.reject(error);
